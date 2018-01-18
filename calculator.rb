@@ -1,178 +1,95 @@
-@unwelcome = false
 @stored_data = []
 
 def help_menu
-  puts ""
-  puts "=== Help Menu ==="
-  puts "- Type 'exit' to exit the calculator -"
- #puts "- Type 'reset' to restart the calculator"  
- #puts "- Type 'something' to clear history"
-  puts "- Type 'back' to reenter information -"
-  puts "- Type 'history' to see past operations -"
-  puts "- Allowed operations: '+ - * /' -"
-end 
+  puts "\n=== Help Menu ==="
+  puts "- Type 'exit' to exit the calculator"
+  puts "- Type 'back' to re-enter information"
+  puts "- Type 'history' to see past operations"
+  puts "- Type 'erase' to clear history"
+  puts "- Allowed operations: '+ - * /'"
+end
 
-def math
-  @num_one = @num_one.to_f.to_i
-  @num_two = @num_two.to_f.to_i
-  case @operator
-    when "+"
-      @solution_f = @num_one.to_f + @num_two.to_f
-      @solution = @solution_f.to_i
-      puts " "
-      @store = "#{@num_one} + #{@num_two} = #{@solution}"
-      puts @store
-    when "-"
-      @solution_f = @num_one.to_f - @num_two.to_f
-      @solution = @solution_f.to_i
-      puts " "
-      @store = "#{@num_one} - #{@num_two} = #{@solution}"
-      puts @store
-    when "*"
-      @solution_f = @num_one.to_f * @num_two.to_f
-      @solution = @solution_f.to_i
-      puts " "
-      @store = "#{@num_one} * #{@num_two} = #{@solution}"
-      puts @store
-    when "/"
-      @solution_f = @num_one.to_f / @num_two.to_f
-      @solution = @solution_f.to_i
-      @solution_f3 = @solution_f.round(3)
-      if @solution == @solution_f
-        puts " "
-        @store = "#{@num_one} / #{@num_two} = #{@solution}"
-        puts @store      
-      else
-        puts " "
-        @store = "#{@num_one} / #{@num_two} = #{@solution_f3}"
-        puts @store
-      end
+def calculate(num_one, operator, num_two)
+  if operator == "/" && num_two == 0
+    puts "\nNice try"
+  else
+    s = ( num_one.to_f.send( operator.to_sym, num_two.to_f ).round(3) )
+    solution = s.to_f == s.to_i ? s.to_i : s
+    store = "#{num_one} #{operator} #{num_two} = #{solution}"
+    puts "\n" + store
+    puts "\n==============\n "
+    @stored_data.push(store)
+    welcome
   end
-  puts " " 
-  puts "======================="    
-  puts " "      
-
-  save_data
-
-  finalize
-end
-
-def history
-  puts " "
-  puts "=== History ==="
-  puts @stored_data
-  puts "= End History ="
-end
-
-def save_data
-  @stored_data.push @store
-  @stored_value = @stored_data.last
-end
-
-def finalize
-  @num_one = ""
-  @num_two = ""
 end
 
 def number_one
-  puts " "
-  if @num_one == ""
-    puts "Enter first number:" 
-  else
-    puts "Renter first number:"    
-  end  
-  @num_one = gets.strip 
-  if @num_one == "exit"
-    exit(0)
-  elsif @num_one == "back"
-    @num_one = ""    
-    puts "Nowhere to go!"
-  elsif @num_one == "help"
-    @num_one = ""    
-    help_menu
-  elsif @num_one == "history"
-    @num_one = ""    
-    history
-  elsif @num_one == "0"
-    operator_get
-  elsif @num_one.to_i != 0
-    operator_get
-  else
-    puts "Invalid Number"
-    puts " "    
-    number_one
+  print "\nEnter first number: "
+  case input = gets.strip.downcase
+    when "exit"
+      exit(0)
+    when "help"
+      help_menu
+    when "history"
+      puts "\n=== History ===\n   #{@stored_data.join("\n   ")} \n= End of History ="
+    when "erase"
+      @stored_data = []
+      print "\nCleared history"
+    when "0"
+      operator_get(0)
+    else
+      case input.to_i
+        when 0
+          puts "Invalid input"
+          number_one
+        else
+          num = input.to_f == input.to_i ? input.to_i : input.to_f
+          operator_get(num)
+      end
+  end
+  number_one
+end
+
+def operator_get(num_one)
+  print "Enter operator: "
+  case input = gets.strip.downcase
+    when "exit"
+      exit(0)
+    when "back"
+      number_one
+    when "+", "-", "*", "/"
+      number_two(num_one, input)
+    else
+      puts "Invalid input"
+      operator_get(num_one)
   end
 end
 
-def operator_get
-  puts " "
-  if @operator == ""
-    puts "Enter operator:" 
-  else
-    puts "Renter operator:"    
-  end  
-  @operator = gets.strip
-    if @operator == "exit"
+def number_two(num_one, operator)
+  print "Enter second number: "
+  case input = gets.strip.downcase
+    when "exit"
       exit(0)
-    elsif @operator == "back"
-      @operator = ""      
-      number_one
-    elsif @operator == "help"
-      @operator = ""      
-      help_menu
-    elsif @operator == "history"
-      @operator = ""      
-      history
-    end
-    case @operator
-      when @operator == "x", "-", "+", "*", "/"
-        number_two
-      when @operator == "help", "back", "history"
-      else
-        puts "Invalid Operator"
-        operator_get
-    end
-end
-
-def number_two
-  puts " "
-  puts "Enter second number:"        
-  @num_two = gets.strip
-  if @num_two == "exit"
-    exit(0)
-  elsif @num_two == "back"
-    operator_get
-  elsif @num_two == "history"
-    history
-  elsif @num_two == "0"
-    math
-  elsif @num_two.to_i != 0
-    math
-  else
-    puts "Invalid Number"
-
-    number_two
+    when "back"
+      operator_get(num_one)
+    when "0" 
+      calculate(num_one, operator, 0)      
+    else
+      case input.to_i
+        when 0
+          puts "Invalid input"
+          num_two(num_one, operator)
+        else
+          num = input.to_f == input.to_i ? input.to_i : input.to_f          
+          calculate(num_one, operator, num)
+      end
   end
 end
 
 def welcome
-  if @unwelcome == false    
-    puts " "    
-    puts "=== Welcome to Calculator ==="
-    puts "Type 'help' for more options"    
-  else
-    puts " "        
-    puts "Type 'help' for more options"                  
-  end
-  @unwelcome = true
-  
+  puts "Type 'help' for more options"
   number_one
 end
 
-while true
-  @num_one = ""
-  @operator = ""
-  @num_two = ""  
-  welcome
-
-end
+puts "\n\n=== Welcome to Ruby Calculator ==="
+welcome
